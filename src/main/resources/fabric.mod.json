@@ -11,6 +11,7 @@
 		"sources": "https://github.com/mirrow487/seedscout"
 	},
 	"license": "MIT",
+	"icon": "assets/seedscout/icon.png",
 	"environment": "client",
 	"entrypoints": {
 		"client": [

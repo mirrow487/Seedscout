@@ -1,3 +1,5 @@
+<p align="center"><img src="src/main/resources/assets/seedscout/icon.png" width="128" height="128" alt="Seedscout icon"></p>
+
 # Seedscout
 
 > 🇹🇷 Türkçe açıklama aşağıda — [Türkçe](#türkçe)
