@@ -24,7 +24,7 @@ public final class SeedscoutConfig {
 
 	/** Last selected mode on the Create World screen. */
 	public SearchMode mode = SearchMode.RANDOM;
-	/** Number of search threads; 0 = automatic (CPU cores - 1). */
+	/** Number of search threads; 0 = automatic (half of the CPU threads, at most 8). */
 	public int threads = 0;
 
 	private SeedscoutConfig() {
@@ -45,10 +45,13 @@ public final class SeedscoutConfig {
 		return directory().resolve("settings.json");
 	}
 
-	/** Threads actually used for searching. */
+	/**
+	 * Threads actually used for searching. The automatic value leaves half of the CPU to the game:
+	 * with (almost) all cores busy the game itself became slow enough to look frozen.
+	 */
 	public int effectiveThreads() {
 		int cores = Runtime.getRuntime().availableProcessors();
-		return this.threads > 0 ? Math.min(this.threads, cores) : Math.max(1, cores - 1);
+		return this.threads > 0 ? Math.min(this.threads, cores) : Math.clamp(cores / 2, 1, 8);
 	}
 
 	private static SeedscoutConfig load() {

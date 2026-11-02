@@ -2,6 +2,7 @@ package com.seedscout.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import com.seedscout.ui.CreateWorldControls;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import org.spongepowered.asm.mixin.Final;
@@ -22,6 +23,10 @@ public abstract class WorldTabMixin {
 	@Final
 	CreateWorldScreen this$0;
 
+	@Shadow
+	@Final
+	private EditBox seedEdit;
+
 	@Inject(
 		method = "<init>",
 		at = @At(
@@ -31,5 +36,13 @@ public abstract class WorldTabMixin {
 	)
 	private void seedscout$addControls(CallbackInfo ci, @Local GridLayout.RowHelper helper) {
 		helper.addChild(CreateWorldControls.createRow(this.this$0), 2);
+		// Vanilla fills the seed box only when the tab is built. Since 26.x a screen is not rebuilt when
+		// we come back to it, so a seed chosen in the Seed Finder ("Use Seed") must be copied in here.
+		EditBox box = this.seedEdit;
+		this.this$0.getUiState().addListener(ui -> {
+			if (!box.getValue().equals(ui.getSeed())) {
+				box.setValue(ui.getSeed());
+			}
+		});
 	}
 }
