@@ -178,6 +178,16 @@ public class CreateWorldClientGameTest implements FabricClientGameTest {
 		ctx.waitFor(mc -> !search.isRunning(), 20 * 30);
 		check(search.error() == null, screenshot + ": search ran without error");
 
+		// Closing the finder must not lose the results: reopening shows them again, ready to continue.
+		int found = search.results().size();
+		click(ctx, require(ctx, "gui.back"));
+		ctx.waitForScreen(CreateWorldScreen.class);
+		click(ctx, require(ctx, "seedscout.button.finder"));
+		ctx.waitForScreen(SeedFinderScreen.class);
+		check(ctx.computeOnClient(mc -> ((SeedFinderScreen) mc.gui.screen()).searchForTests() == search) && search.results().size() == found,
+			screenshot + ": results are kept after closing and reopening the finder");
+		check(TestUtil.widget(ctx, "seedscout.finder.continue").isPresent(), screenshot + ": the search can be continued");
+
 		SeedResult best = search.results().getFirst();
 		WorldgenSettings settings = ctx.computeOnClient(mc -> {
 			Screen finder = mc.gui.screen();

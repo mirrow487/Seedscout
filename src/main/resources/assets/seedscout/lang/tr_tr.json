@@ -120,5 +120,6 @@
 	"seedscout.rule.cherry_grove": "Kiraz Bahçesi",
 	"seedscout.rule.meadow": "Çayır",
 	"seedscout.finder.blocks": "spawn'a %s blok",
-	"seedscout.finder.row_hint": "Seçmek için tıkla, analiz için çift tıkla"
+	"seedscout.finder.row_hint": "Seçmek için tıkla",
+	"seedscout.finder.continue": "Devam Et"
 }

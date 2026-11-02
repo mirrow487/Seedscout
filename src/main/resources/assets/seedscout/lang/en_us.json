@@ -120,5 +120,6 @@
 	"seedscout.rule.cherry_grove": "Cherry Grove",
 	"seedscout.rule.meadow": "Meadow",
 	"seedscout.finder.blocks": "%s blocks from spawn",
-	"seedscout.finder.row_hint": "Click to select, double-click to analyse"
+	"seedscout.finder.row_hint": "Click to select",
+	"seedscout.finder.continue": "Continue"
 }

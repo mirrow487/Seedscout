@@ -35,6 +35,8 @@ public final class SeedSearch {
 	private volatile boolean stopRequested;
 	private volatile @Nullable Throwable error;
 	private int resultsVersion;
+	/** Seeds tried by earlier searches that this one continues. */
+	private long triedBefore;
 
 	private SeedSearch(WorldgenSettings settings, SearchPreset preset, int threads) {
 		this.settings = settings;
@@ -45,7 +47,19 @@ public final class SeedSearch {
 
 	/** Starts searching. {@code settings} is owned by the search from now on. */
 	public static SeedSearch start(WorldgenSettings settings, SearchPreset preset, int threads) {
+		return start(settings, preset, threads, null);
+	}
+
+	/**
+	 * Starts searching and keeps the results (and the tried counter) of an earlier search, so a search
+	 * can be continued after the finder screen was closed.
+	 */
+	public static SeedSearch start(WorldgenSettings settings, SearchPreset preset, int threads, @Nullable SeedSearch previous) {
 		SeedSearch search = new SeedSearch(settings, preset, threads);
+		if (previous != null) {
+			search.results.addAll(previous.results());
+			search.triedBefore = previous.tried();
+		}
 		search.running.set(threads);
 		for (int i = 0; i < threads; i++) {
 			search.executor.execute(search::work);
@@ -101,14 +115,14 @@ public final class SeedSearch {
 	}
 
 	public long tried() {
-		return this.tried.sum();
+		return this.triedBefore + this.tried.sum();
 	}
 
-	/** Seeds per second since the start. */
+	/** Seeds per second of this run. */
 	public double rate() {
 		long end = isRunning() ? System.nanoTime() : this.stopNanos;
 		double seconds = (end - this.startNanos) / 1e9;
-		return seconds <= 0 ? 0 : tried() / seconds;
+		return seconds <= 0 ? 0 : this.tried.sum() / seconds;
 	}
 
 	public int threads() {

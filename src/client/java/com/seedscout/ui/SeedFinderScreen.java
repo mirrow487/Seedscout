@@ -20,7 +20,11 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
 import org.jspecify.annotations.Nullable;
 
+import com.seedscout.SeedscoutClient;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * The seed finder: searches random seeds on background threads with the preset of the selected mode,
@@ -42,11 +46,18 @@ public class SeedFinderScreen extends Screen {
 	private Button copyButton;
 	private int listTop;
 
+	/**
+	 * The last search of each Create World screen (per mode). Kept after the finder is closed, so the
+	 * results are still there when it is opened again, and the search can be continued.
+	 */
+	private static final Map<CreateWorldScreen, Map<SearchMode, SeedSearch>> LAST_SEARCHES = new WeakHashMap<>();
+
 	public SeedFinderScreen(CreateWorldScreen parent) {
 		super(Component.translatable("seedscout.finder.title"));
 		this.parent = parent;
 		this.mode = SeedscoutConfig.get().mode;
 		this.preset = SearchPreset.defaults(this.mode);
+		this.search = LAST_SEARCHES.getOrDefault(parent, Map.of()).get(this.mode);
 	}
 
 	@Override
@@ -72,15 +83,17 @@ public class SeedFinderScreen extends Screen {
 		if (this.search != null && this.search.isRunning()) {
 			this.search.stop();
 		} else {
-			this.search = SeedSearch.start(WorldgenSettings.fromScreen(this.parent), this.preset, SeedscoutConfig.get().effectiveThreads());
-			this.scroll = 0;
+			// Continues the previous search of this screen and mode (its results are kept).
+			this.search = SeedSearch.start(WorldgenSettings.fromScreen(this.parent), this.preset, SeedscoutConfig.get().effectiveThreads(), this.search);
+			LAST_SEARCHES.computeIfAbsent(this.parent, p -> new EnumMap<>(SearchMode.class)).put(this.mode, this.search);
 		}
 		updateButtons();
 	}
 
 	private void updateButtons() {
 		boolean running = this.search != null && this.search.isRunning();
-		this.searchButton.setMessage(Component.translatable(running ? "seedscout.finder.stop" : "seedscout.finder.start"));
+		this.searchButton.setMessage(Component.translatable(running ? "seedscout.finder.stop"
+			: this.search != null ? "seedscout.finder.continue" : "seedscout.finder.start"));
 		this.searchButton.active = !(this.search != null && this.search.isStopping());
 		boolean hasSelection = this.selected != null;
 		this.useButton.active = hasSelection;
@@ -246,10 +259,9 @@ public class SeedFinderScreen extends Screen {
 			int index = (int) this.scroll + (int) ((event.y() - this.listTop) / ROW_HEIGHT);
 			List<SeedResult> results = this.search.results();
 			if (index >= 0 && index < results.size()) {
+				// Only selects. (A double click used to open the analysis, which replaced this screen
+				// unexpectedly when a row was clicked twice.)
 				this.selected = results.get(index).seed();
-				if (doubleClick) {
-					analyzeSelected();
-				}
 				updateButtons();
 				return true;
 			}
@@ -273,6 +285,11 @@ public class SeedFinderScreen extends Screen {
 
 	@Override
 	public void onClose() {
+		if (this.search != null && this.search.isRunning()) {
+			// Logged with the call stack, so a "the finder closed by itself" report shows what closed it.
+			SeedscoutClient.LOGGER.info("Seed Finder closed while searching ({} seeds tried, {} found); results are kept",
+				this.search.tried(), this.search.results().size(), new Throwable("Seed Finder closed by"));
+		}
 		stopSearch();
 		CreateWorldControls.back(this.parent);
 	}
