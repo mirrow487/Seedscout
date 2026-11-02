@@ -25,6 +25,8 @@ import net.minecraft.world.level.levelgen.densityfunction.SamplerContext;
  * Not thread-safe (the samplers use caches): use one instance per thread.
  */
 public final class SeedWorld {
+	private static final int[] MAP_SAMPLE_Y = {64, 112, 160};
+
 	private final WorldgenSettings settings;
 	private final long seed;
 	private final RandomState randomState;
@@ -114,6 +116,21 @@ public final class SeedWorld {
 	/** Biome at a block position (biomes are stored per 4×4×4 "quart"). */
 	public Holder<Biome> biome(int blockX, int blockY, int blockZ) {
 		return this.biomeResolver.getNoiseBiome(QuartPos.fromBlock(blockX), QuartPos.fromBlock(blockY), QuartPos.fromBlock(blockZ));
+	}
+
+	/**
+	 * Fast "map" biome of a column: the biome at y=64 (no terrain needed). Under high mountains y=64 can
+	 * be inside a cave biome; then higher layers are tried, which gives the mountain biome.
+	 */
+	public Holder<Biome> mapBiome(int blockX, int blockZ) {
+		Holder<Biome> biome = null;
+		for (int y : MAP_SAMPLE_Y) {
+			biome = biome(blockX, y, blockZ);
+			if (!this.settings.caveBiomes().contains(biome.value())) {
+				return biome;
+			}
+		}
+		return biome;
 	}
 
 	/** Biome you would see standing on the surface at this column. */

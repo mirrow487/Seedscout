@@ -4,7 +4,8 @@ import com.seedscout.config.SearchMode;
 import com.seedscout.config.SeedscoutConfig;
 import com.seedscout.ui.CustomizeScreen;
 import com.seedscout.ui.SeedFinderScreen;
-import com.seedscout.ui.SeedAnalysisScreen;
+import com.seedscout.ui.SeedMapScreen;
+import com.seedscout.util.Names;
 import com.seedscout.worldgen.SeedAnalysis;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -95,17 +96,40 @@ public class CreateWorldClientGameTest implements FabricClientGameTest {
 		check(!require(ctx, "seedscout.button.finder").visible && !require(ctx, "seedscout.mode.random").visible
 			&& !require(ctx, "seedscout.button.customize").visible, "seed typed: finder, mode and Specify hidden");
 		ctx.takeScreenshot("stage2_seed_typed");
+		// Stage 3: the map of the typed seed.
 		click(ctx, require(ctx, "seedscout.button.analyze"));
-		ctx.waitForScreen(SeedAnalysisScreen.class);
-		ctx.waitFor(mc -> mc.gui.screen() instanceof SeedAnalysisScreen s && s.analysisForTests().finished(), 20 * 120);
-		SeedAnalysis analysis = ctx.computeOnClient(mc -> ((SeedAnalysisScreen) mc.gui.screen()).analysisForTests());
-		check(analysis.error() == null, "analysis finished without error");
-		check(analysis.seed() == 8675309L, "analysis uses the seed of the seed box");
-		check(new BlockPos(16, 64, 80).equals(analysis.spawn()), "analysis spawn = real spawn of seed 8675309 (16 64 80)");
-		check(analysis.structures().stream().anyMatch(e -> e.hit() != null && e.hit().pos().getX() == -304 && e.hit().pos().getZ() == -320),
-			"analysis lists village_plains at -304 -320 like /locate");
-		check(!analysis.biomes().isEmpty(), "analysis lists surface biomes");
-		ctx.takeScreenshot("stage2_analysis");
+		ctx.waitForScreen(SeedMapScreen.class);
+		ctx.waitFor(mc -> mc.gui.screen() instanceof SeedMapScreen m && m.analysisForTests().finished()
+			&& m.sessionForTests().scannedRadius() >= 1500 && m.viewCompleteForTests(), 20 * 180);
+		SeedMapScreen map = ctx.computeOnClient(mc -> (SeedMapScreen) mc.gui.screen());
+		SeedAnalysis analysis = map.analysisForTests();
+		check(analysis.error() == null, "map: analysis finished without error");
+		check(analysis.seed() == 8675309L && map.sessionForTests().seed() == 8675309L, "map uses the seed of the seed box");
+		check(new BlockPos(16, 64, 80).equals(map.sessionForTests().spawn()), "map spawn = real spawn of seed 8675309 (16 64 80)");
+		check(map.sessionForTests().structures().stream().anyMatch(s -> s.hit().pos().getX() == -304 && s.hit().pos().getZ() == -320
+			&& Names.id(s.hit().structure()).equals("minecraft:village_plains")), "map shows village_plains at -304 -320 like /locate");
+		check(TestUtil.widget(ctx, "seedscout.finder.use").isEmpty(), "map of the typed seed has no Use Seed button");
+		ctx.takeScreenshot("stage3_map");
+
+		// Click the village in the side panel: the map moves there.
+		int row = ctx.computeOnClient(mc -> map.panelRowYForTests("minecraft:village_plains"));
+		check(row >= 0, "side panel lists the nearest village_plains");
+		int panelX = ctx.computeOnClient(mc -> mc.gui.screen().width - 20);
+		TestUtil.clickAt(ctx, panelX, row + 5);
+		check(ctx.computeOnClient(mc -> map.centerForTests()).equals(new BlockPos(-304, 0, -320)), "clicking the panel row centres the map on it");
+
+		// Zoom in (mouse wheel) and turn on height shading.
+		double before = ctx.computeOnClient(mc -> map.blocksPerPixelForTests());
+		ctx.runOnClient(mc -> mc.gui.screen().mouseScrolled(mc.gui.screen().width / 3.0, mc.gui.screen().height / 2.0, 0, 3));
+		check(ctx.computeOnClient(mc -> map.blocksPerPixelForTests()) < before, "mouse wheel zooms in");
+		click(ctx, require(ctx, "seedscout.map.shading"));
+		ctx.waitFor(mc -> map.viewCompleteForTests(), 20 * 180);
+		ctx.waitTicks(5);
+		ctx.takeScreenshot("stage3_map_zoomed_shaded");
+		ctx.runOnClient(mc -> map.setViewForTests(16, 80, 40, false));
+		ctx.waitFor(mc -> map.viewCompleteForTests(), 20 * 180);
+		ctx.waitTicks(5);
+		ctx.takeScreenshot("stage3_map_zoomed_out");
 		click(ctx, require(ctx, "gui.back"));
 		ctx.waitForScreen(CreateWorldScreen.class);
 		check(settingsBefore.equals(ctx.computeOnClient(mc -> settingsFingerprint((CreateWorldScreen) mc.gui.screen()))),
@@ -124,8 +148,12 @@ public class CreateWorldClientGameTest implements FabricClientGameTest {
 			return locator.nearest(villages, spawn, 400) != null && locator.nearest(portals, spawn, 400) != null;
 		}, "village and ruined portal within 400 blocks of spawn");
 
-		// "Use Seed" writes it into the seed box (and the mode controls disappear).
+		// Map of a found seed, then "Use Seed" from the map writes it into the seed box.
 		ctx.runOnClient(mc -> ((SeedFinderScreen) mc.gui.screen()).selectForTests(speedrunSeed));
+		click(ctx, require(ctx, "seedscout.button.analyze"));
+		ctx.waitForScreen(SeedMapScreen.class);
+		ctx.waitFor(mc -> mc.gui.screen() instanceof SeedMapScreen m && m.viewCompleteForTests(), 20 * 180);
+		ctx.takeScreenshot("stage3_map_from_finder");
 		click(ctx, require(ctx, "seedscout.finder.use"));
 		ctx.waitForScreen(CreateWorldScreen.class);
 		check(ctx.computeOnClient(mc -> ((CreateWorldScreen) mc.gui.screen()).getUiState().getSeed()).equals(Long.toString(speedrunSeed)),

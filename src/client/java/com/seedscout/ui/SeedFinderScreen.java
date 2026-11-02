@@ -70,7 +70,7 @@ public class SeedFinderScreen extends Screen {
 		int x = this.width / 2 - (4 * w + 3 * 4) / 2;
 		this.useButton = this.addRenderableWidget(Button.builder(Component.translatable("seedscout.finder.use"), b -> useSelected())
 			.bounds(x, y, w, 20).build());
-		this.analyzeButton = this.addRenderableWidget(Button.builder(Component.translatable("seedscout.button.analyze"), b -> analyzeSelected())
+		this.analyzeButton = this.addRenderableWidget(Button.builder(Component.translatable("seedscout.button.analyze"), b -> mapSelected())
 			.bounds(x + (w + 4), y, w, 20).build());
 		this.copyButton = this.addRenderableWidget(Button.builder(Component.translatable("seedscout.analysis.copy_seed"), b -> copySelected())
 			.bounds(x + 2 * (w + 4), y, w, 20).build());
@@ -108,15 +108,22 @@ public class SeedFinderScreen extends Screen {
 
 	private void useSelected() {
 		if (this.selected != null) {
-			stopSearch();
-			this.parent.getUiState().setSeed(Long.toString(this.selected));
-			CreateWorldControls.back(this.parent);
+			useSeed(this.selected);
 		}
 	}
 
-	private void analyzeSelected() {
+	/** Puts the seed into the seed box and goes back to the Create World screen. */
+	private void useSeed(long seed) {
+		stopSearch();
+		this.parent.getUiState().setSeed(Long.toString(seed));
+		CreateWorldControls.back(this.parent);
+	}
+
+	/** Opens the map of the selected seed; the search keeps running meanwhile. */
+	private void mapSelected() {
 		if (this.selected != null) {
-			this.minecraft.gui.setScreen(new SeedAnalysisScreen(this.parent, this, this.selected));
+			long seed = this.selected;
+			this.minecraft.gui.setScreen(new SeedMapScreen(this.parent, this, seed, () -> useSeed(seed)));
 		}
 	}
 
@@ -259,8 +266,7 @@ public class SeedFinderScreen extends Screen {
 			int index = (int) this.scroll + (int) ((event.y() - this.listTop) / ROW_HEIGHT);
 			List<SeedResult> results = this.search.results();
 			if (index >= 0 && index < results.size()) {
-				// Only selects. (A double click used to open the analysis, which replaced this screen
-				// unexpectedly when a row was clicked twice.)
+				// Only selects (a double click used to replace this screen unexpectedly).
 				this.selected = results.get(index).seed();
 				updateButtons();
 				return true;

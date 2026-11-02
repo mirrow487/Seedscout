@@ -17,7 +17,7 @@ import java.util.Arrays;
 /**
  * Builds the extra row that sits right under the seed box in the "World" tab of the Create World screen:
  * <pre>
- *   [ Analyze ] [ Seed Finder ] [ Mode: Random/Speedrun/Survival ] [ Specify ]
+ *   [ Map ] [ Seed Finder ] [ Mode: Random/Speedrun/Survival ] [ Specify ]
  * </pre>
  * The row is 310 px wide, exactly like the vanilla rows of that tab.
  */
@@ -37,9 +37,9 @@ public final class CreateWorldControls {
 		WorldCreationUiState uiState = screen.getUiState();
 		LinearLayout row = LinearLayout.horizontal().spacing(SPACING);
 
-		// Analyze: only for a seed the player typed (it only reads, it never changes the world settings).
+		// Map: only for a seed the player typed (it only reads, it never changes the world settings).
 		Button analyze = Button.builder(Component.translatable("seedscout.button.analyze"),
-				b -> open(screen, SeedAnalysisScreen.forSeedBox(screen)))
+				b -> open(screen, SeedMapScreen.forSeedBox(screen)))
 			.width(ANALYZE_WIDTH)
 			.build();
 		Button finder = Button.builder(Component.translatable("seedscout.button.finder"), b -> open(screen, new SeedFinderScreen(screen)))

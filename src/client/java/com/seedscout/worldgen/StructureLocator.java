@@ -214,7 +214,7 @@ public final class StructureLocator {
 	}
 
 	/** Candidate start chunks of a placement around a point (one per spread region, ring positions, …). */
-	private List<ChunkPos> candidateChunks(StructurePlacement placement, BlockPos center, int radius) {
+	public List<ChunkPos> candidateChunks(StructurePlacement placement, BlockPos center, int radius) {
 		List<ChunkPos> chunks = new ArrayList<>();
 		int minChunkX = SectionPos.blockToSectionCoord(center.getX() - radius);
 		int maxChunkX = SectionPos.blockToSectionCoord(center.getX() + radius);
