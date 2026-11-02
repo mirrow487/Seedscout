@@ -33,8 +33,6 @@ import java.util.Set;
 public final class SeedEvaluator {
 	/** Distance between biome samples. Biomes are stored per 4 blocks; 16 keeps small biomes visible. */
 	private static final int BIOME_STEP = 16;
-	/** Biomes at y=64 under high mountains can be cave biomes: then the column is sampled higher up. */
-	private static final int[] BIOME_SAMPLE_Y = {64, 112, 160};
 	private static final int TERRAIN_STEP = 16;
 
 	private final WorldgenSettings settings;
@@ -42,7 +40,6 @@ public final class SeedEvaluator {
 	private final List<ResolvedRule> structureRules;
 	private final List<ResolvedRule> biomeRules;
 	private final @Nullable TerrainGoals terrain;
-	private final Set<Biome> caveBiomes = Collections.newSetFromMap(new IdentityHashMap<>());
 	private final int maxBiomeRadius;
 
 	public SeedEvaluator(WorldgenSettings settings, SearchPreset preset) {
@@ -54,10 +51,6 @@ public final class SeedEvaluator {
 		this.biomeRules = this.rules.stream().filter(r -> r.rule().target() == Rule.Target.BIOME).toList();
 		this.maxBiomeRadius = this.biomeRules.stream().mapToInt(r -> r.rule().maxDistance()).max().orElse(0);
 		this.terrain = preset.terrain();
-		var biomes = settings.registries().lookupOrThrow(Registries.BIOME);
-		for (String id : List.of("minecraft:lush_caves", "minecraft:dripstone_caves", "minecraft:deep_dark")) {
-			biomes.get(ResourceKey.create(Registries.BIOME, Identifier.parse(id))).ifPresent(h -> this.caveBiomes.add(h.value()));
-		}
 	}
 
 	private static int order(RuleKind kind) {
@@ -158,7 +151,7 @@ public final class SeedEvaluator {
 					continue;
 				}
 				if (biome == null) {
-					biome = sampleBiome(world, spawn.getX() + dx, spawn.getZ() + dz);
+					biome = world.mapBiome(spawn.getX() + dx, spawn.getZ() + dz);
 				}
 				if (rule.matchesBiome(biome)) {
 					if (rule.rule().kind() == RuleKind.FORBIDDEN) {
@@ -175,17 +168,6 @@ public final class SeedEvaluator {
 			}
 		}
 		return found;
-	}
-
-	private Holder<Biome> sampleBiome(SeedWorld world, int x, int z) {
-		Holder<Biome> biome = null;
-		for (int y : BIOME_SAMPLE_Y) {
-			biome = world.biome(x, y, z);
-			if (!this.caveBiomes.contains(biome.value())) {
-				return biome;
-			}
-		}
-		return biome;
 	}
 
 	/** Grid of noise heights (no chunks) in a circle around spawn. */

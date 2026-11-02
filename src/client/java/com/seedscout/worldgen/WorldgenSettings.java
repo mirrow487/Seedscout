@@ -31,7 +31,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Set;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.biome.Biome;
 import java.util.stream.Stream;
 
 /**
@@ -58,6 +64,7 @@ public final class WorldgenSettings implements AutoCloseable {
 	private final DataFixer dataFixer;
 	private @Nullable CloseableResourceManager resourceManager;
 	private @Nullable StructureTemplateManager templateManager;
+	private @Nullable Set<Biome> caveBiomes;
 
 	public WorldgenSettings(
 		RegistryAccess.Frozen registries,
@@ -98,6 +105,19 @@ public final class WorldgenSettings implements AutoCloseable {
 			Minecraft.getInstance().directoryValidator(),
 			Minecraft.getInstance().getFixerUpper()
 		);
+	}
+
+	/** Underground-only biomes (lush caves, dripstone caves, deep dark), resolved once. */
+	public synchronized Set<Biome> caveBiomes() {
+		if (this.caveBiomes == null) {
+			Set<Biome> set = Collections.newSetFromMap(new IdentityHashMap<>());
+			var biomes = this.registries.lookupOrThrow(Registries.BIOME);
+			for (String id : List.of("minecraft:lush_caves", "minecraft:dripstone_caves", "minecraft:deep_dark")) {
+				biomes.get(ResourceKey.create(Registries.BIOME, Identifier.parse(id))).ifPresent(h -> set.add(h.value()));
+			}
+			this.caveBiomes = set;
+		}
+		return this.caveBiomes;
 	}
 
 	public RegistryAccess.Frozen registries() {

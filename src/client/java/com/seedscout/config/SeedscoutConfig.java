@@ -26,6 +26,8 @@ public final class SeedscoutConfig {
 	public SearchMode mode = SearchMode.RANDOM;
 	/** Number of search threads; 0 = automatic (half of the CPU threads, at most 8). */
 	public int threads = 0;
+	/** Map preview radius around spawn, in blocks. */
+	public int mapRadius = 10000;
 
 	private SeedscoutConfig() {
 	}
@@ -65,6 +67,9 @@ public final class SeedscoutConfig {
 			if (json.has("mode")) {
 				config.mode = SearchMode.byId(json.get("mode").getAsString());
 			}
+			if (json.has("mapRadius")) {
+				config.mapRadius = Math.clamp(json.get("mapRadius").getAsInt(), 500, 50000);
+			}
 			if (json.has("threads")) {
 				config.threads = Math.max(0, json.get("threads").getAsInt());
 			}
@@ -79,6 +84,7 @@ public final class SeedscoutConfig {
 		JsonObject json = new JsonObject();
 		json.addProperty("mode", this.mode.id());
 		json.addProperty("threads", this.threads);
+		json.addProperty("mapRadius", this.mapRadius);
 		try {
 			Files.createDirectories(directory());
 			Files.writeString(file(), GSON.toJson(json), StandardCharsets.UTF_8);

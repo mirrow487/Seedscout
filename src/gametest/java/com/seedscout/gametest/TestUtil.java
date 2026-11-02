@@ -71,6 +71,16 @@ public final class TestUtil {
 		ctx.waitTicks(2);
 	}
 
+	/** Left click at a GUI position of the current screen (press + release). */
+	public static void clickAt(ClientGameTestContext ctx, double x, double y) {
+		ctx.runOnClient(mc -> {
+			MouseButtonEvent event = new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
+			mc.gui.screen().mouseClicked(event, false);
+			mc.gui.screen().mouseReleased(event);
+		});
+		ctx.waitTicks(2);
+	}
+
 	public static void check(boolean condition, String message) {
 		if (!condition) {
 			throw new AssertionError(message);
