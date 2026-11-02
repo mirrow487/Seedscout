@@ -6,7 +6,8 @@ A **client-side** Fabric mod for Minecraft **26.3** (Java Edition) that adds a s
 **Create World** screen. The goal is not "OP/cheat" seeds but survival worlds with nice terrain and
 useful structures close to spawn — good places to build on.
 
-> **Status:** in development. Stage 1 (project setup + buttons on the Create World screen) is done.
+> **Status:** in development. Stage 1 (Create World screen controls) and stage 2 (structure / biome / spawn
+> calculation, verified against `/locate`) are done.
 
 ## Requirements
 
@@ -21,14 +22,35 @@ Client only — the mod is never needed on a server.
 
 ## Features (planned per stage)
 
-1. **Create World screen** (World tab, under the seed box): `Seed Finder` button, mode selector
-   (`Random` / `Speedrun/OP` / `Nice Terrain`) and a `Customize` button.
-   *Random* is vanilla: Seedscout does not search, compute or change anything.
-2. Structure & biome positions for one seed, computed with the game's own world generation code,
-   without generating chunks (verified against `/locate`).
+1. ✅ **Create World screen** (World tab, under the seed box): `Seed Finder` button, mode selector
+   (`Random` / `Speedrun/OP` / `Nice Terrain`), `Specify` button and `Analyze` button.
+   *Random* is vanilla: Seedscout does not search or change anything.
+2. ✅ **Seed analysis** (`Analyze`): spawn point, the nearest structure of every type and the nearest surface
+   biomes of the seed the new world will get. Computed with the game's own world generation code, without
+   generating chunks. Click a row to copy the matching `/locate` command.
 3. Chunkbase-style map preview with structure icons and a "nearest structures" panel.
 4. Rule editor (any registered structure/biome, also from data packs and mods) and multi-threaded search.
 5. Terrain scoring, presets, performance and polish.
+
+## How it works (no chunks are generated)
+
+Everything is read from the Create World screen: the selected world type's overworld generator
+(normal, large biomes, amplified, …), the registries loaded with the enabled data packs (so data pack and
+mod structures/biomes are included) and the "Generate Structures" switch.
+
+For a seed, Seedscout builds the same `RandomState` and `ChunkGeneratorStructureState` as the server, then:
+
+1. **Placement**: the structure set's own placement code gives the candidate chunks (spread regions,
+   stronghold rings), including frequency and exclusion zones.
+2. **Selection**: for sets with several structures (e.g. the 5 village types), the same weighted random as
+   the game picks one.
+3. **Validity**: `Structure.findValidGenerationPoint`, the check `/locate` uses (biome, terrain height from
+   the noise, jigsaw start piece).
+4. **Biomes**: the world's biome source with the climate sampler; **spawn**: `ChunkGenerator.getOrigin`,
+   like `MinecraftServer.setInitialSpawn`.
+
+An automated test creates real worlds (normal and large biomes) and compares spawn, 48 structure types,
+2000 biome samples and `/locate biome` results with the integrated server: all identical.
 
 ## Building
 
@@ -72,7 +94,8 @@ Minecraft **26.3** (Java Edition) için **sadece istemci tarafında** çalışan
 ekranına bir seed bulucu ekler. Amaç OP/hile seed'i bulmak değil; survival'da güzel araziye ve iyi yapılara
 yakın, üstüne güzel inşaatlar yapılabilecek dünyalar bulmak.
 
-> **Durum:** geliştiriliyor. Aşama 1 (proje kurulumu + Dünya Oluştur ekranındaki butonlar) tamamlandı.
+> **Durum:** geliştiriliyor. Aşama 1 (Dünya Oluştur ekranı) ve Aşama 2 (`/locate` ile doğrulanmış yapı / biyom /
+> spawn hesabı) tamamlandı.
 
 ### Gereksinimler
 
@@ -87,14 +110,34 @@ Sadece istemci — sunucuya kurmaya gerek yok.
 
 ### Özellikler (aşamalara göre plan)
 
-1. **Dünya Oluştur ekranı** (Dünya sekmesi, seed kutusunun altı): `Seed Bulucu` butonu, mod seçimi
-   (`Rastgele` / `Speedrun/OP` / `Güzel Arazi`) ve `Özelleştir` butonu.
+1. ✅ **Dünya Oluştur ekranı** (Dünya sekmesi, seed kutusunun altı): `Seed Bulucu` butonu, mod seçimi
+   (`Rastgele` / `Speedrun/OP` / `Güzel Arazi`), `Belirle` butonu ve `Analiz` butonu.
    *Rastgele* vanilla'dır: Seedscout hiçbir arama yapmaz, hiçbir şeyi değiştirmez.
-2. Tek bir seed için yapı ve biyom konumları; chunk oluşturmadan, oyunun kendi dünya üretim koduyla
-   (`/locate` ile karşılaştırılarak doğrulanır).
+2. ✅ **Seed analizi** (`Analiz`): yeni dünyanın alacağı seed için spawn noktası, her yapı türünün en yakını ve
+   yüzeydeki en yakın biyomlar. Chunk oluşturmadan, oyunun kendi dünya üretim koduyla hesaplanır. Bir satıra
+   tıklayınca ilgili `/locate` komutu kopyalanır.
 3. Chunkbase tarzı harita önizleme, yapı ikonları ve "en yakın yapılar" paneli.
 4. Kural düzenleyici (datapack ve modlardakiler dahil kayıtlı tüm yapı/biyomlar) ve çok thread'li arama.
 5. Arazi puanlama, preset'ler, performans ve cilalama.
+
+### Nasıl çalışır (chunk oluşturulmaz)
+
+Her şey Dünya Oluştur ekranından okunur: seçilen dünya tipinin overworld üreticisi (normal, büyük biyomlar,
+amplified…), etkin datapack'lerle yüklenmiş registry'ler (datapack ve mod yapıları/biyomları da dahil) ve
+"Yapıları Oluştur" anahtarı.
+
+Bir seed için sunucuyla aynı `RandomState` ve `ChunkGeneratorStructureState` kurulur, sonra:
+
+1. **Yerleşim**: yapı setinin kendi yerleşim kodu aday chunk'ları verir (dağılım bölgeleri, stronghold
+   halkaları); sıklık ve dışlama bölgeleri dahil.
+2. **Seçim**: birden fazla yapılı setlerde (ör. 5 köy tipi) oyundaki ağırlıklı rastgele seçimle aynısı yapılır.
+3. **Geçerlilik**: `/locate`'in kullandığı `Structure.findValidGenerationPoint` (biyom, gürültüden arazi
+   yüksekliği, jigsaw başlangıç parçası).
+4. **Biyomlar**: dünyanın biyom kaynağı ve iklim örnekleyicisi; **spawn**: `MinecraftServer.setInitialSpawn`
+   gibi `ChunkGenerator.getOrigin`.
+
+Otomatik bir test gerçek dünyalar (normal ve büyük biyomlar) oluşturup spawn, 48 yapı türü, 2000 biyom örneği
+ve `/locate biome` sonuçlarını entegre sunucuyla karşılaştırır: hepsi birebir aynı.
 
 ### Derleme
 

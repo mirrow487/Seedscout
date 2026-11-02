@@ -6,7 +6,8 @@
 	"environment": "*",
 	"entrypoints": {
 		"fabric-client-gametest": [
-			"com.seedscout.gametest.CreateWorldClientGameTest"
+			"com.seedscout.gametest.CreateWorldClientGameTest",
+			"com.seedscout.gametest.LocateParityClientGameTest"
 		]
 	},
 	"depends": {

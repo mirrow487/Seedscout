@@ -16,16 +16,17 @@ import java.util.Arrays;
 /**
  * Builds the extra row that sits right under the seed box in the "World" tab of the Create World screen:
  * <pre>
- *   [ Seed Finder ] [ Mode: Random/Speedrun/Survival ] [ Customize ]
+ *   [ Seed Finder ] [ Mode: Random/Speedrun/Survival ] [ Specify ] [ Analyze ]
  * </pre>
  * The row is 310 px wide, exactly like the vanilla rows of that tab.
  */
 public final class CreateWorldControls {
 	private static final int ROW_WIDTH = 310;
 	private static final int SPACING = 5;
-	private static final int FINDER_WIDTH = 95;
-	private static final int CUSTOMIZE_WIDTH = 70;
-	private static final int MODE_WIDTH = ROW_WIDTH - FINDER_WIDTH - CUSTOMIZE_WIDTH - 2 * SPACING;
+	private static final int FINDER_WIDTH = 80;
+	private static final int CUSTOMIZE_WIDTH = 55;
+	private static final int ANALYZE_WIDTH = 50;
+	private static final int MODE_WIDTH = ROW_WIDTH - FINDER_WIDTH - CUSTOMIZE_WIDTH - ANALYZE_WIDTH - 3 * SPACING;
 
 	/**
 	 * Set when we leave the Create World screen for one of our screens. Vanilla rebuilds its tabs on
@@ -57,9 +58,16 @@ public final class CreateWorldControls {
 				refresh(value, finder, customize);
 			});
 
+		// Works in every mode (also "Random"): it only reads, it never changes the world settings.
+		Button analyze = Button.builder(Component.translatable("seedscout.button.analyze"), b -> open(screen, new SeedAnalysisScreen(screen)))
+			.width(ANALYZE_WIDTH)
+			.tooltip(Tooltip.create(Component.translatable("seedscout.button.analyze.info")))
+			.build();
+
 		row.addChild(finder);
 		row.addChild(mode);
 		row.addChild(customize);
+		row.addChild(analyze);
 		refresh(config.mode, finder, customize);
 		return row;
 	}
