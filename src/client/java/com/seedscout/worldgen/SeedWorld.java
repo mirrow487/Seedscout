@@ -100,6 +100,12 @@ public final class SeedWorld {
 		return this.spawnPos;
 	}
 
+	/** {@link #spawnPos()} without the (more expensive) height: y = 0. Enough for horizontal distances. */
+	public BlockPos spawnXZ() {
+		ChunkPos chunk = spawnChunk();
+		return new BlockPos(chunk.getMinBlockX(), 0, chunk.getMinBlockZ());
+	}
+
 	/** Terrain height (first air block above ground or water) from the noise, without generating the chunk. */
 	public int surfaceHeight(int blockX, int blockZ) {
 		return this.settings.generator().getBaseHeight(blockX, blockZ, Heightmap.Types.WORLD_SURFACE_WG, this.settings.heightAccessor(), this.randomState);

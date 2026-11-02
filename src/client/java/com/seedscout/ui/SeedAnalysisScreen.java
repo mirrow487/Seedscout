@@ -29,11 +29,11 @@ public class SeedAnalysisScreen extends Screen {
 	private static final int ROW_HEIGHT = 12;
 	private static final int LIST_TOP = 62;
 
-	private final CreateWorldScreen parent;
+	private final CreateWorldScreen createWorldScreen;
+	private final Screen back;
 	private final SeedAnalysis analysis;
 	private final Component worldType;
 	private final boolean structuresOn;
-	private final boolean randomSeed;
 	private double scroll;
 	private @Nullable Component copiedMessage;
 	private long copiedUntil;
@@ -42,16 +42,25 @@ public class SeedAnalysisScreen extends Screen {
 	private record Row(Component name, Component distance, Component coords, @Nullable String command, boolean header) {
 	}
 
-	public SeedAnalysisScreen(CreateWorldScreen parent) {
+	/**
+	 * @param createWorldScreen the Create World screen whose settings (world type, data packs…) are used
+	 * @param back              screen to return to
+	 * @param seed              seed to analyse
+	 */
+	public SeedAnalysisScreen(CreateWorldScreen createWorldScreen, Screen back, long seed) {
 		super(Component.translatable("seedscout.analysis.title"));
-		this.parent = parent;
-		WorldCreationUiState uiState = parent.getUiState();
+		this.createWorldScreen = createWorldScreen;
+		this.back = back;
+		WorldCreationUiState uiState = createWorldScreen.getUiState();
 		this.worldType = uiState.getWorldType().describePreset();
 		this.structuresOn = uiState.isGenerateStructures();
-		this.randomSeed = uiState.getSeed().isBlank();
-		// The exact seed the new world will get (also when the seed box is empty: vanilla already picked one).
-		long seed = uiState.getSettings().options().seed();
-		this.analysis = SeedAnalysis.start(WorldgenSettings.fromScreen(parent), seed);
+		this.analysis = SeedAnalysis.start(WorldgenSettings.fromScreen(createWorldScreen), seed);
+	}
+
+	/** Analysis of the seed typed in the seed box (the box must not be empty). */
+	public static SeedAnalysisScreen forSeedBox(CreateWorldScreen screen) {
+		// With a typed seed this is exactly WorldOptions.parseSeed(text): the seed the world will get.
+		return new SeedAnalysisScreen(screen, screen, screen.getUiState().getSettings().options().seed());
 	}
 
 	@Override
@@ -108,9 +117,7 @@ public class SeedAnalysisScreen extends Screen {
 		super.extractRenderState(graphics, mouseX, mouseY, a);
 		graphics.centeredText(this.font, this.title, this.width / 2, 8, 0xFFFFFFFF);
 
-		Component seedText = this.randomSeed
-			? Component.translatable("seedscout.analysis.seed_random", this.analysis.seed())
-			: Component.translatable("seedscout.analysis.seed", this.analysis.seed());
+		Component seedText = Component.translatable("seedscout.analysis.seed", this.analysis.seed());
 		graphics.text(this.font, seedText, 10, 22, 0xFFFFFF55);
 		graphics.text(this.font, Component.translatable("seedscout.summary.world_type", this.worldType), this.width / 2 + 10, 22, 0xFFE0E0E0);
 
@@ -224,6 +231,10 @@ public class SeedAnalysisScreen extends Screen {
 
 	@Override
 	public void onClose() {
-		CreateWorldControls.back(this.parent);
+		if (this.back == this.createWorldScreen) {
+			CreateWorldControls.back(this.createWorldScreen);
+		} else {
+			this.minecraft.gui.setScreen(this.back);
+		}
 	}
 }

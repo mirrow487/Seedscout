@@ -27,12 +27,20 @@ Client only — the mod is never needed on a server.
 1. ✅ **Create World screen** (World tab, under the seed box): `Seed Finder` button, mode selector
    (`Random` / `Speedrun/OP` / `Nice Terrain`), `Specify` button and `Analyze` button.
    *Random* is vanilla: Seedscout does not search or change anything.
-2. ✅ **Seed analysis** (`Analyze`): spawn point, the nearest structure of every type and the nearest surface
-   biomes of the seed the new world will get. Computed with the game's own world generation code, without
+   With a seed typed into the seed box, only `Analyze` is shown (the world is already decided).
+2. ✅ **Seed Finder** (seed box empty): searches random seeds on several threads with the mode's built-in
+   rules. *Speedrun/OP*: a village and a ruined portal within 400 blocks of spawn are required; shipwreck,
+   buried treasure, temples, abandoned camps and trail ruins nearby add score; no ocean spawn.
+   *Nice Terrain*: a forest within 250 blocks is required; rivers, mountains, cherry groves, meadows and
+   villages add score, and the terrain around spawn is measured (water, hills, mountains, flat land).
+   Live counter, seeds/second, results by score; `Use Seed` puts a result into the seed box.
+   (Editing the rules comes in stage 4.)
+3. ✅ **Seed analysis** (`Analyze`): spawn point, the nearest structure of every type and the nearest surface
+   biomes of the seed in the seed box. Computed with the game's own world generation code, without
    generating chunks. Click a row to copy the matching `/locate` command.
-3. Chunkbase-style map preview with structure icons and a "nearest structures" panel.
-4. Rule editor (any registered structure/biome, also from data packs and mods) and multi-threaded search.
-5. Terrain scoring, presets, performance and polish.
+4. Chunkbase-style map preview with structure icons and a "nearest structures" panel.
+5. Rule editor (any registered structure/biome, also from data packs and mods).
+6. Better terrain scoring, presets, performance and polish.
 
 ## How it works (no chunks are generated)
 
@@ -115,12 +123,19 @@ Sadece istemci — sunucuya kurmaya gerek yok.
 1. ✅ **Dünya Oluştur ekranı** (Dünya sekmesi, seed kutusunun altı): `Seed Bulucu` butonu, mod seçimi
    (`Rastgele` / `Speedrun/OP` / `Güzel Arazi`), `Belirle` butonu ve `Analiz` butonu.
    *Rastgele* vanilla'dır: Seedscout hiçbir arama yapmaz, hiçbir şeyi değiştirmez.
-2. ✅ **Seed analizi** (`Analiz`): yeni dünyanın alacağı seed için spawn noktası, her yapı türünün en yakını ve
+   Seed kutusuna seed yazılıysa sadece `Analiz` görünür (dünya zaten belli).
+2. ✅ **Seed Bulucu** (seed kutusu boşken): seçili modun hazır kurallarıyla birden fazla thread'de rastgele
+   seed'ler dener. *Speedrun/OP*: spawn'a 400 blok içinde köy ve yıkık portal zorunlu; yakındaki batık gemi,
+   gömülü hazine, tapınaklar, terk edilmiş kamplar ve patika harabeleri puan verir; okyanusta spawn olmaz.
+   *Güzel Arazi*: 250 blok içinde orman zorunlu; nehir, dağ, kiraz bahçesi, çayır ve köy puan verir, spawn
+   çevresindeki arazi ölçülür (su, tepeler, dağlar, düz alan). Canlı sayaç, saniyedeki seed, puana göre
+   sonuçlar; `Seed'i Kullan` sonucu seed kutusuna yazar. (Kuralları düzenleme 4. aşamada.)
+3. ✅ **Seed analizi** (`Analiz`): seed kutusundaki seed için spawn noktası, her yapı türünün en yakını ve
    yüzeydeki en yakın biyomlar. Chunk oluşturmadan, oyunun kendi dünya üretim koduyla hesaplanır. Bir satıra
    tıklayınca ilgili `/locate` komutu kopyalanır.
-3. Chunkbase tarzı harita önizleme, yapı ikonları ve "en yakın yapılar" paneli.
-4. Kural düzenleyici (datapack ve modlardakiler dahil kayıtlı tüm yapı/biyomlar) ve çok thread'li arama.
-5. Arazi puanlama, preset'ler, performans ve cilalama.
+4. Chunkbase tarzı harita önizleme, yapı ikonları ve "en yakın yapılar" paneli.
+5. Kural düzenleyici (datapack ve modlardakiler dahil kayıtlı tüm yapı/biyomlar).
+6. Daha iyi arazi puanlama, preset'ler, performans ve cilalama.
 
 ### Nasıl çalışır (chunk oluşturulmaz)
 

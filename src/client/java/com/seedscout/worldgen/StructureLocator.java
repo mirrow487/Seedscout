@@ -18,6 +18,8 @@ import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Set;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -170,6 +172,45 @@ public final class StructureLocator {
 			}
 		}
 		return hits;
+	}
+
+	/**
+	 * Nearest structure out of {@code wanted} within {@code radius} blocks of {@code center}, or null.
+	 * Stage 1 (placement only, pure random numbers) selects the candidate chunks in range, sorted by
+	 * distance; only those get stage 2 (selection + the game's validity check). Structure sets that
+	 * contain none of the wanted structures are not touched at all.
+	 */
+	public @Nullable StructureHit nearest(Set<Structure> wanted, BlockPos center, int radius) {
+		StructureHit best = null;
+		double bestDist = Double.MAX_VALUE;
+		long radiusSqr = (long) radius * radius;
+		for (Holder<StructureSet> setHolder : structureSets()) {
+			StructureSet set = setHolder.value();
+			if (set.structures().stream().noneMatch(e -> wanted.contains(e.structure().value()) && isPossible(e.structure()))) {
+				continue;
+			}
+			List<ChunkPos> candidates = new ArrayList<>();
+			for (ChunkPos chunk : candidateChunks(set.placement(), center, radius)) {
+				if (horizontalDistSqr(set.placement().getLocatePos(chunk), center) <= radiusSqr) {
+					candidates.add(chunk);
+				}
+			}
+			candidates.sort(Comparator.comparingLong(c -> horizontalDistSqr(set.placement().getLocatePos(c), center)));
+			for (ChunkPos chunk : candidates) {
+				BlockPos pos = set.placement().getLocatePos(chunk);
+				double dist = Math.sqrt(horizontalDistSqr(pos, center));
+				if (dist >= bestDist) {
+					break;
+				}
+				Holder<Structure> structure = structureAt(set, chunk);
+				if (structure != null && wanted.contains(structure.value())) {
+					best = new StructureHit(structure, chunk, pos);
+					bestDist = dist;
+					break;
+				}
+			}
+		}
+		return best;
 	}
 
 	/** Candidate start chunks of a placement around a point (one per spread region, ring positions, …). */
