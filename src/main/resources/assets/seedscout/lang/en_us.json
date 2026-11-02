@@ -1,0 +1,27 @@
+{
+	"seedscout.button.finder": "Seed Finder",
+	"seedscout.button.finder.info": "Search for seeds that match the selected mode.",
+	"seedscout.button.finder.disabled": "Pick Speedrun/OP or Survival/Nice Terrain to search. \"Random\" works exactly like vanilla.",
+	"seedscout.button.mode": "Mode",
+	"seedscout.button.customize": "Customize",
+	"seedscout.button.customize.info": "Change the rules and terrain settings of this mode.",
+
+	"seedscout.mode.random": "Random",
+	"seedscout.mode.random.info": "Vanilla behaviour. Seedscout does not search or change anything.",
+	"seedscout.mode.speedrun": "Speedrun/OP",
+	"seedscout.mode.speedrun.info": "Good loot structures close to spawn: village, shipwreck, ruined portal, buried treasure…",
+	"seedscout.mode.survival": "Nice Terrain",
+	"seedscout.mode.survival.info": "Survival/Nice Terrain: mountains, rivers and lakes, forests, flat building areas and interesting biome borders.",
+
+	"seedscout.finder.title": "Seed Finder",
+	"seedscout.customize.title": "Customize: %s",
+	"seedscout.stage.later": "Coming in a later stage of development.",
+
+	"seedscout.summary.mode": "Mode: %s",
+	"seedscout.summary.world_type": "World type: %s",
+	"seedscout.summary.structures": "Generate structures: %s",
+	"seedscout.summary.seed": "Seed box: %s",
+	"seedscout.summary.seed.empty": "(empty)",
+	"seedscout.summary.datapacks": "Enabled data packs: %s",
+	"seedscout.summary.registry": "Registry: %s structures, %s biomes (vanilla + data packs + mods)"
+}

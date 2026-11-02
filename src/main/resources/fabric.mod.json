@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "seedscout",
+	"version": "${version}",
+	"name": "Seedscout",
+	"description": "Client-side seed finder for the Create World screen: search seeds by nearby structures, biomes and terrain, and preview them on a map.",
+	"authors": [
+		"mirrow487"
+	],
+	"contact": {
+		"sources": "https://github.com/mirrow487/seedscout"
+	},
+	"license": "MIT",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"com.seedscout.SeedscoutClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	},
+	"mixins": [
+		{
+			"config": "seedscout.client.mixins.json",
+			"environment": "client"
+		}
+	]
+}
