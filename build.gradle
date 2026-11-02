@@ -1,0 +1,74 @@
+plugins {
+	// Minecraft 26.x is no longer obfuscated, so the plain (non "-remap") Loom plugin is used.
+	id 'net.fabricmc.fabric-loom' version "${loom_version}"
+	id 'maven-publish'
+}
+
+base {
+	archivesName = "seedscout"
+}
+
+repositories {
+	// Loom adds the Minecraft / Fabric repositories automatically.
+}
+
+loom {
+	// Client-only mod: all code lives in the "client" source set,
+	// "main" only holds shared resources (fabric.mod.json, language files).
+	splitEnvironmentSourceSets()
+
+	mods {
+		"seedscout" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+fabricApi {
+	// Automated in-game client tests (src/gametest). They are NOT part of the mod jar.
+	// Run with: ./gradlew runClientGameTest   (needs a display; see README)
+	configureTests {
+		createSourceSet = true
+		modId = "seedscout_gametest"
+		enableGameTests = false
+		enableClientGameTests = true
+		eula = true
+	}
+}
+
+dependencies {
+	// Versions live in gradle.properties
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = "UTF-8"
+}
+
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
+}
+
+jar {
+	def projectName = project.name
+	inputs.property "projectName", projectName
+
+	from("LICENSE") {
+		rename { "${it}_$projectName" }
+	}
+}

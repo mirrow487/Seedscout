@@ -1,0 +1,15 @@
+{
+	"schemaVersion": 1,
+	"id": "seedscout_gametest",
+	"version": "1.0.0",
+	"name": "Seedscout Game Tests",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"com.seedscout.gametest.CreateWorldClientGameTest"
+		]
+	},
+	"depends": {
+		"seedscout": "*"
+	}
+}

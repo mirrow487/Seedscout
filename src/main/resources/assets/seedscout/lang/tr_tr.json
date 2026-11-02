@@ -1,0 +1,27 @@
+{
+	"seedscout.button.finder": "Seed Bulucu",
+	"seedscout.button.finder.info": "Seçili moda uyan seed'leri ara.",
+	"seedscout.button.finder.disabled": "Aramak için Speedrun/OP veya Survival/Güzel Arazi seç. \"Rastgele\" tamamen vanilla gibi çalışır.",
+	"seedscout.button.mode": "Mod",
+	"seedscout.button.customize": "Özelleştir",
+	"seedscout.button.customize.info": "Bu modun kurallarını ve arazi ayarlarını değiştir.",
+
+	"seedscout.mode.random": "Rastgele",
+	"seedscout.mode.random.info": "Vanilla davranışı. Seedscout hiçbir arama yapmaz, hiçbir şeyi değiştirmez.",
+	"seedscout.mode.speedrun": "Speedrun/OP",
+	"seedscout.mode.speedrun.info": "Spawn'a yakın iyi loot veren yapılar: köy, batık gemi, yıkık portal, gömülü hazine…",
+	"seedscout.mode.survival": "Güzel Arazi",
+	"seedscout.mode.survival.info": "Survival/Güzel Arazi: dağlar, nehir ve göller, ormanlar, düz inşaat alanları ve ilginç biyom geçişleri.",
+
+	"seedscout.finder.title": "Seed Bulucu",
+	"seedscout.customize.title": "Özelleştir: %s",
+	"seedscout.stage.later": "Geliştirmenin sonraki aşamasında eklenecek.",
+
+	"seedscout.summary.mode": "Mod: %s",
+	"seedscout.summary.world_type": "Dünya tipi: %s",
+	"seedscout.summary.structures": "Yapıları oluştur: %s",
+	"seedscout.summary.seed": "Seed kutusu: %s",
+	"seedscout.summary.seed.empty": "(boş)",
+	"seedscout.summary.datapacks": "Etkin datapack'ler: %s",
+	"seedscout.summary.registry": "Registry: %s yapı, %s biyom (vanilla + datapack + mod)"
+}
